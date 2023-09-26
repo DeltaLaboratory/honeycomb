@@ -12,6 +12,7 @@ type DB struct {
 }
 
 type Option struct {
+	Version     []byte
 	Seperator   []byte
 	Marshaller  func(any) ([]byte, error)
 	Unmarshaler func([]byte, any) error
@@ -20,6 +21,7 @@ type Option struct {
 // DefaultOption returns the default option, which uses CBOR as the marshaller and unmarshaller and ":" as the seperator.
 func DefaultOption() *Option {
 	return &Option{
+		Version:     []byte("default"),
 		Seperator:   []byte(":"),
 		Marshaller:  cbor.Marshal,
 		Unmarshaler: cbor.Unmarshal,
@@ -34,5 +36,5 @@ func NewDB(db *badger.DB, options *Option) *DB {
 }
 
 func (db *DB) Container(namespace []byte) *Container {
-	return NewContainer(namespace, db)
+	return NewContainer(append(append(db.option.Version, db.option.Seperator...), namespace...), db)
 }
